@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
+
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -103,12 +104,11 @@ public abstract class BaseController {
         return Encode.forHtml(input.trim());
     }
 
-    // TODO - may want to handle this exception in the GEH
     protected Long validateId(String id) {
         try {
             return Long.parseLong(id);
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Invalid ID format");
+            return -1L;
         }
     }
 
@@ -119,13 +119,15 @@ public abstract class BaseController {
     }
 
     protected ResponseEntity<Map<String, String>> createErrorResponse(HttpStatus status, String message) {
-        return ResponseEntity.status(status)
-                .body(Map.of("error", message));
+        return ResponseEntity.status(status).body(Map.of("error", message));
     }
 
     protected ResponseEntity<Map<String, String>> createSuccessResponse(String message) {
-        return ResponseEntity.ok()
-                .body(Map.of("message", message));
+        return ResponseEntity.ok().body(Map.of("message", message));
+    }
+
+    protected ResponseEntity<Map<String, Object>> createSuccessResponseWithPayload(String message, Object payload) {
+        return ResponseEntity.ok().body(Map.of("message", message, "content", payload));
     }
 
     // Utility methods

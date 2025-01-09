@@ -1,5 +1,6 @@
 package com.melon.app.exception;
 
+import org.springframework.security.access.AccessDeniedException;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -25,6 +26,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body(Map.of("error", "An unexpected error occurred. Please try again later."));
+    }
+
+    @ExceptionHandler(InvalidRequestException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidRequestException(InvalidRequestException ex) {
+        logError(ex.getMessage(), ex);
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", ex.getMessage()));
     }
 
     @ExceptionHandler(EmailAlreadyExistsException.class)
@@ -91,6 +98,18 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleUserNotInOrganizationException(UserNotInOrganizationException e) {
         logger.warn("User not in organization: {}", Map.of("error", e.getMessage()));
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<Map<String, String>> handleAccessDeniedException(AccessDeniedException e) {
+        logger.warn("Access denied: {}", Map.of("error", e.getMessage()));
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
+    }
+
+    @ExceptionHandler(ChatRoomNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleChatRoomNotFoundException(ChatRoomNotFoundException e) {
+        logger.warn("Chat room not found: {}", Map.of("error", e.getMessage()));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
     }
 
     // Class to represent the error response structure

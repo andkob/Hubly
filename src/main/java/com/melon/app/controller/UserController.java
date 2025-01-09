@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.melon.app.entity.User;
 import com.melon.app.service.UserService;
+import com.melon.app.controller.DTO.OrganizationDTO;
 import com.melon.app.controller.DTO.OrganizationIdNameDTO;
 import com.melon.app.entity.Organization;
 
@@ -53,6 +55,18 @@ public class UserController extends BaseController {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Set<Organization> orgs = userService.getOrganizations(user);
         List<OrganizationIdNameDTO> orgIdNameDTOs = orgs.stream().map(OrganizationIdNameDTO::new).collect(Collectors.toList());
-        return ResponseEntity.ok(orgIdNameDTOs);
+        return createSuccessResponseWithPayload("Successfully fetched user organizations", orgIdNameDTOs);
+    }
+
+    @GetMapping("/me/id")
+    public ResponseEntity<Map<String, Object>> getId(@AuthenticationPrincipal User user) {
+        return createSuccessResponseWithPayload("Successfully fetched ID", user.getId());
+    }
+
+    @GetMapping("/me/organizations/all")
+    public ResponseEntity<?> getAllOrganizationData(@AuthenticationPrincipal User currentUser) {
+        Set<Organization> orgs = userService.getOrganizations(currentUser);
+        List<OrganizationDTO> orgDTOs = orgs.stream().map(OrganizationDTO::new).collect(Collectors.toList());
+        return createSuccessResponseWithPayload("Successfully fetched user organization data", orgDTOs);
     }
 }
